@@ -46,7 +46,7 @@ static void MX_USART2_UART_Init(void);
 void performCriticalTasks(void);
 void printWelcomeMessage(void);
 uint8_t processUserInput(uint8_t opt);
-int8_t readUserInput(void);
+uint8_t readUserInput(void);
 
 
 int main(void)
@@ -106,24 +106,43 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 }
 
 
-int8_t readUserInput(void)
+/* Returns the digit typed (1..9), or 0 if no key is waiting or it is not a digit */
+uint8_t readUserInput(void)
 {
     uint8_t data;
 
-    if (RingBuffer_Read(&rxBuf, &data, 1) == 1) {
-        if (data >= '0' && data <= '9')
-            return data - '0';
-    }
+    if (RingBuffer_Read(&rxBuf, &data, 1) == 1 && data >= '1' && data <= '9')
+        return data - '0';
 
-    return -1;
+    return 0;
 }
 
 
 //////////////////////////////// From main-ex3.c ///////////////////////////////
+/*
+ * Original version from main-ex3.c. When the UART is idle it hands pData
+ * straight to HAL_UART_Transmit_IT(), which sends from that address in the
+ * background after the caller has returned - unsafe when pData is a local
+ * buffer such as msg[] in processUserInput().
+ *
 uint8_t UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t len) {
   if(HAL_UART_Transmit_IT(huart, pData, len) != HAL_OK) {
     if(RingBuffer_Write(&txBuf, pData, len) != RING_BUFFER_OK)
       return 0;
+  }
+  return 1;
+}
+*/
+
+/* Always copy into txBuf, then start the transmitter if it is idle;
+ * HAL_UART_TxCpltCallback() drains the rest. */
+uint8_t UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t len) {
+  if(RingBuffer_Write(&txBuf, pData, len) != RING_BUFFER_OK)
+    return 0;
+
+  if(huart->gState == HAL_UART_STATE_READY) {
+    RingBuffer_Read(&txBuf, &txData, 1);
+    HAL_UART_Transmit_IT(huart, &txData, 1);
   }
   return 1;
 }

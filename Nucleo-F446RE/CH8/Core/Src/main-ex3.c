@@ -32,7 +32,7 @@ UART_HandleTypeDef huart2;
 char readBuf[1];
 uint8_t txData;
 __IO ITStatus UartReady = SET;
-RingBuffer txBuf, rxBuf;
+RingBuffer txBuf;
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -56,7 +56,6 @@ int main(void) {
   MX_USART2_UART_Init();
 
   RingBuffer_Init(&txBuf);
-  RingBuffer_Init(&rxBuf);
 
   /* Enable USART2 interrupt */
   HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
