@@ -1,6 +1,6 @@
-# CH5-EX1 — retargeting `printf()`/`scanf()` to USART2
+# CH5-Experiment — 5.3 I/O Retargeting: retargeting `printf()`/`scanf()` to USART2
 
-Chapter 5 of *Mastering STM32*, on the NUCLEO-F446RE, built from the terminal
+This experiment is on the NUCLEO-F446RE, built from the terminal
 with the `Makefile` in this folder instead of STM32CubeIDE.
 
 `Core/Src/retarget.c` implements the newlib system calls (`_write()`,
