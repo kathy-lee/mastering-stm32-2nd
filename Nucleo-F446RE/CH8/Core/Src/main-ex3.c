@@ -55,6 +55,9 @@ int main(void) {
   MX_GPIO_Init();
   MX_USART2_UART_Init();
 
+  RingBuffer_Init(&txBuf);
+  RingBuffer_Init(&rxBuf);
+
   /* Enable USART2 interrupt */
   HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(USART2_IRQn);
