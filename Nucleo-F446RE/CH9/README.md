@@ -12,13 +12,7 @@ make clean          # optional: delete the build/ folder
 
 Each builds `build/CH9-EX<n>.elf` and programs it with OpenOCD, as in CH5.
 Both send one line over USART2 (PA2/PA3, the ST-LINK virtual COM port) at
-115200 8N1, so open a terminal first:
-
-```
-picocom -b 115200 /dev/ttyACM0
-```
-
-then press the black RESET button. One line appears and LD2 turns on.
+115200 8N1, so a serial terminal is needed.
 
 ## What both examples share
 
@@ -50,7 +44,27 @@ cleared and LD2 is lit.
 
 The CPU is free of the byte-copying work, but it still waits: this is
 equivalent to a blocking `HAL_UART_Transmit()` from the program's point of
-view. Output: `Hello STM32 Lovers! This message is transferred in DMA Mode.`
+view.
+
+1. `cd Nucleo-F446RE/CH9`
+2. `make EX=1 flash`
+3. Open the terminal:
+
+   ```
+   picocom -b 115200 /dev/ttyACM0
+   ```
+
+4. Press the black RESET button (the blue one is the USER button, unused
+   here). One line appears and LD2 turns on:
+
+   ```
+   Hello STM32 Lovers! This message is transferred in DMA Mode.
+   ```
+
+   The message is sent once per reset, so if the terminal was opened after
+   `make flash` finished, press RESET again to see it.
+
+Leave picocom with Ctrl-A then Ctrl-X.
 
 ## Example 2 — interrupt on completion (`main-ex2.c`)
 
@@ -66,7 +80,16 @@ Same stream setup, with three differences:
 - `main()` falls straight through to `while (1);` — no polling. The callback
   checks `hdma->Instance == DMA1_Stream6`, clears DMAT and turns LD2 on.
 
-Output: `Hello STM32 Lovers! This message is transferred in DMA-Interrupt Mode.`
+1. `cd Nucleo-F446RE/CH9`
+2. `make EX=2 flash` (or just `make flash`, since `EX` defaults to 2)
+3. `picocom -b 115200 /dev/ttyACM0`
+4. Press the black RESET button. One line appears and LD2 turns on:
+
+   ```
+   Hello STM32 Lovers! This message is transferred in DMA-Interrupt Mode.
+   ```
+
+Leave picocom with Ctrl-A then Ctrl-X.
 
 From the terminal both look the same. The difference is where the CPU is
 while the ~60 bytes go out (about 5 ms at 115200 baud): in example 1 it is
